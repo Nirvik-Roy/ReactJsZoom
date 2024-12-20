@@ -9,30 +9,34 @@ function App() {
   const imageRef = useRef(null);
   const lensRef = useRef(null);
   const resultRef = useRef(null);
-
   const [containerRect, setContainerRect] = useState({});
   const [imageRect, setImageRect] = useState({});
   const [lensRect, setLensRect] = useState({});
   const [resultRect, setResultRect] = useState({});
-
+  const [position,setPostion]=useState({
+    x:0,
+    y:0,
+  })
   useEffect(() => {
     // Get dimensions of the elements after the component mounts
     setContainerRect(containerRef.current.getBoundingClientRect());
     setImageRect(imageRef.current.getBoundingClientRect());
     setLensRect(lensRef.current.getBoundingClientRect());
     setResultRect(resultRef.current.getBoundingClientRect());
-
     // Set the background image for the zoomed result
     resultRef.current.style.backgroundImage = `url(${imageSrc})`;
   }, [count]) // Use state will be called when ever the count value changes, and handlemouse event is called;
 
   const handleMouseMove = (e) => {
+    setPostion({
+      x:e.clientX,
+      y:e.clientY,
+    })
     const { x, y } = getMousePos(e);
     setCount(count + 1)
     // Move the lens
     lensRef.current.style.left = `${x}px`;
     lensRef.current.style.top = `${y}px`;
-
     // Calculate zoom factor
     const fx = resultRect.width / lensRect.width;
     const fy = resultRect.height / lensRect.height;
@@ -58,7 +62,14 @@ function App() {
     };
   };
 
-
+const handleMouseMoveLeave = () =>{
+  setPostion(
+    {
+      x:0,
+      y:0,
+    }
+  )
+}
   return (
 
     <>
@@ -66,10 +77,11 @@ function App() {
         className="container"
         ref={containerRef}
         onMouseMove={handleMouseMove}
+        onMouseLeave={handleMouseMoveLeave}
       >
         <img src={imageSrc} alt="Zoomable" className="image" ref={imageRef} />
-        <div className="lens" ref={lensRef}></div>
-        <div className="result" ref={resultRef}></div>
+        <div className="lens" style={{visibility:'hidden'}} ref={lensRef}></div>
+        <div className="result" style={{position:'fixed',left:position.x,top:position.y,borderRadius:'50%'}}  ref={resultRef}></div>
       </div>
 
     </>
